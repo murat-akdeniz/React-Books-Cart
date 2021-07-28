@@ -1,25 +1,59 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { createContext, useState } from 'react'
+import { Route } from "react-router-dom";
+import Products from './components/Products';
+import Cart from './components/Cart';
+import './styles.css'
+import { data } from './data'
 
+export const BooksContext = createContext();
 function App() {
+  const [state, setState] = useState({
+    booklist: data,
+    cart: []
+  })
+
+  const addToCart = (book) => {
+    setState({
+      ...state,
+      cart: state.cart.find(cartItem => cartItem.id === book.id)
+        ? state.cart.map(cartItem => cartItem.id === book.id ? {
+          ...cartItem,
+          count: cartItem.count + 1
+        } : cartItem)
+        : [...state.cart, { ...book, count: 1 }]
+
+    })
+  }
+  const increaseBookCount = (book) => {
+    setState({
+      ...state,
+      cart: state.cart.map(cartItem => cartItem.id === book.id ? { ...cartItem, count: cartItem.count + 1 } : cartItem)
+    })
+  }
+  const decreaseBookCount = (book) => {
+    setState({
+      ...state,
+      cart: state.cart.map(cartItem => cartItem.id === book.id ? { ...cartItem, count: cartItem.count > 1 ? cartItem.count - 1 : cartItem.count = 1 } : cartItem)
+    })
+  }
+  const removeBook = (book) => {
+    setState({
+      ...state,
+      cart: state.cart.filter((cartItem) => cartItem.id !== book.id)
+    })
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <BooksContext.Provider value={{ state, addToCart, increaseBookCount, decreaseBookCount, removeBook }}>
+      <div className='App'>
+        <h1>Alışveriş Sepeti</h1>
+
+        <Route exact path='/' component={Products} />
+        <Route path='/cart' component={Cart} />
+
+      </div>
+    </BooksContext.Provider>
+  )
 }
 
-export default App;
+export default App
